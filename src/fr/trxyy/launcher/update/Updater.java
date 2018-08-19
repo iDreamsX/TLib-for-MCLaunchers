@@ -1,47 +1,50 @@
 package fr.trxyy.launcher.update;
 
 import java.util.HashMap;
-import java.util.prefs.Preferences;
 
-import fr.trxyy.launcher.forgelauncher.ForgeLauncher;
-import fr.trxyy.launcher.fxutil.TLabel;
+import fr.trxyy.launcher.fxutil.TProgressBar;
+import fr.trxyy.launcher.util.Wrapper;
 
 public class Updater {
 	
-	public HashMap<String, Integer> filesURL = new HashMap<String, Integer>();
-	public static DownloadTask downloadTask;
+	public static HashMap<String, LauncherFile> files = new HashMap();
+	public DownloadTask downloadTask;
 	public Thread updateThread;
 	public boolean isUpdating = false;
-	  public TLabel labelDl;
-	public Preferences savedData = Preferences.userRoot();
+	public static TProgressBar bar;
 	
-	public void checkForUpdate(final XMLParser parser,
-			final Updater updater, TLabel custo) {
+	public void checkForUpdate(final String username_, final String password, final XMLParser parser, final Updater updater, TProgressBar suppBar) {
 		
-	    if (custo != null) {
-	        this.labelDl = custo;
-	      } else {
-	        this.labelDl = new TLabel(null);
-	      }
+		if (suppBar != null) {
+			bar = suppBar;
+		}
+		else {
+			bar = new TProgressBar();
+		}
 		
 		updateThread = new Thread() {
 			public void run() {
-//				LauncherPanel.simplePanel.playButton.setDisable(true);
-				
-					parser.getFilesToDownload(updater);
-					if (!filesURL.isEmpty()) {						
-						downloadTask = new DownloadTask(filesURL, updateThread, Updater.this.labelDl);
+					parser.getFilesToDownload();
+					if (!files.isEmpty()) {
+						downloadTask = new DownloadTask(files, updateThread);
 						isUpdating = true;
 						downloadTask.startDownloading();
 					} else {
-						downloadTask = new DownloadTask(filesURL, updateThread, Updater.this.labelDl);
-//						Platform.runLater(() -> LauncherPanel.simplePanel.labelPercentage.setText(""));
+						downloadTask = new DownloadTask(files, updateThread);
 						isUpdating = false;
-						ForgeLauncher.prepareGame();
-//						LauncherPanel.simplePanel.playButton.setDisable(false);
+						// LAUNCHGAME
+						Wrapper.log("No Update needed. Launching game...");
 					}
 			}
 		};
 		updateThread.start();
+	}
+	
+	public DownloadTask getDownloader() {
+		return this.downloadTask;
+	}
+
+	public TProgressBar getProgressBar() {
+		return this.bar;
 	}
 }

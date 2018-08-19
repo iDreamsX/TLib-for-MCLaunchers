@@ -56,5 +56,10 @@ public class TConstants {
 	public static int getHeight() {
 		return HEIGHT;
 	}
+
+	public static String getDownloadUrl() {
+		// TODO Auto-generated method stub
+		return DOWNLOAD_URL;
+	}
 	
 }

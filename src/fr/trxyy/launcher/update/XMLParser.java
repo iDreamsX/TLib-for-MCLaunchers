@@ -21,70 +21,69 @@ import fr.trxyy.launcher.util.Wrapper;
 
 public class XMLParser {
 
-    public static void getFilesToDownload(Updater updater) {
-    	Wrapper.log("initializing");
-		Proxy proxy = Proxy.NO_PROXY;
-        try {
-            final URL resourceUrl = new URL(TConstants.DOWNLOAD_URL);
-            final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-            final DocumentBuilder db = dbf.newDocumentBuilder();
-            final Document doc = db.parse(resourceUrl.openConnection(proxy).getInputStream());
-            final NodeList nodeLst = doc.getElementsByTagName("Contents");
+	  public static void getFilesToDownload() {
+			Proxy proxy = Proxy.NO_PROXY;
+	      try {
+	          final URL resourceUrl = new URL(TConstants.DOWNLOAD_URL);
+	          final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+	          final DocumentBuilder db = dbf.newDocumentBuilder();
+	          final Document doc = db.parse(resourceUrl.openConnection(proxy).getInputStream());
+	          final NodeList nodeLst = doc.getElementsByTagName("Contents");
+	          
+	          final long start = System.nanoTime();
+	          for(int i = 0; i < nodeLst.getLength(); i++) {
+	              final Node node = nodeLst.item(i);
+	              if(node.getNodeType() == 1) {
+	                  final Element element = (Element) node;
+	                  final String key = element.getElementsByTagName("Key").item(0).getChildNodes().item(0).getNodeValue();
+	                  String etag = element.getElementsByTagName("ETag") != null ? element.getElementsByTagName("ETag").item(0).getChildNodes().item(0).getNodeValue() : "-";
+	                  final long size = Long.parseLong(element.getElementsByTagName("Size").item(0).getChildNodes().item(0).getNodeValue());
 
-            final long start = System.nanoTime();
-            for(int i = 0; i < nodeLst.getLength(); i++) {
-                final Node node = nodeLst.item(i);
-                if(node.getNodeType() == 1) {
-                    final Element element = (Element) node;
-                    final String key = element.getElementsByTagName("Key").item(0).getChildNodes().item(0).getNodeValue();
-                    String etag = element.getElementsByTagName("ETag") != null ? element.getElementsByTagName("ETag").item(0).getChildNodes().item(0).getNodeValue() : "-";
-                    final long size = Long.parseLong(element.getElementsByTagName("Size").item(0).getChildNodes().item(0).getNodeValue());
-
-					File localFile = new File(McDir.getDirectory(), key);
-					if (!localFile.isDirectory()) {
-						
-                        if(etag.length() > 1) {
-                            etag = FileUtil.getEtag(etag);
-                            
-                            if (localFile.exists()) {
-                            	
-                            	 if(localFile.isFile() && localFile.length() == size) {
-                            		 
-                                   final String localMd5 = FileUtil.getMD5(localFile);
-                                   
-                                   if(localMd5.equals(etag)) {
-                                	   Wrapper.log("Fichier Valide (Etag Correct).");
-                                   }
-                                   else {
-                                	   Wrapper.log("Fichier Invalide (Etag Incorrect).");
-                                	   updater.filesURL.put(TConstants.DOWNLOAD_URL + key, (int) size);
-                                   }
-                                   
-                            	 }
-                            }
-                            else {
-                            	if (!(TConstants.DOWNLOAD_URL + key).endsWith("/")) {
-                                	updater.filesURL.put(TConstants.DOWNLOAD_URL + key, (int) size);
-                            	}
-                            }
-                            
-                        }
-					}
-					else {
-						localFile.mkdir();
-						localFile.mkdirs();
-					}
-                }
-            }
-            final long end = System.nanoTime();
-            final long delta = end - start;
-            Wrapper.log("Delta time to compare resources: " + delta / 1000000L + " ms ");
-        }
-        catch(final Exception ex) {
-        	Wrapper.log("Couldn't download resources (" + ex + ")");
-        }
-    }
-
+						File localFile = new File(McDir.getDirectory(), key);
+						if (!localFile.isDirectory()) {
+							
+	                      if(etag.length() > 1) {
+	                          etag = FileUtil.getEtag(etag);
+	                          
+	                          if (localFile.exists()) {
+	                          	
+	                          	 if(localFile.isFile() && localFile.length() == size) {
+	                          		 
+	                                 final String localMd5 = FileUtil.getMD5(localFile);
+	                                 
+	                                 if(localMd5.equals(etag)) {
+//	                                	 Updater.files.put(key, new LauncherFile(size, TConstants.DOWNLOAD_URL + key, localFile.getAbsolutePath()));
+	                                	 Wrapper.log("Fichier valide !");
+	                                 }
+	                                 else {
+	                                	 Updater.files.put(key, new LauncherFile(size, TConstants.DOWNLOAD_URL + key, localFile.getAbsolutePath()));
+	                                 }
+	                                 
+	                          	 }
+	                          }
+	                          else {
+	                          	if (!(TConstants.DOWNLOAD_URL + key).endsWith("/")) {
+	                          		Updater.files.put(key, new LauncherFile(size, TConstants.DOWNLOAD_URL + key, localFile.getAbsolutePath()));
+	                          	}
+	                          }
+	                          
+	                      }
+						}
+						else {
+							localFile.mkdir();
+							localFile.mkdirs();
+						}
+	              }
+	          }
+	          final long end = System.nanoTime();
+	          final long delta = end - start;
+	          Wrapper.log("Delta time to compare resources: " + delta / 1000000L + " ms ");
+	      }
+	      catch(final Exception ex) {
+	      	Wrapper.log("Couldn't download resources (" + ex + ")");
+	      }
+	  }
+	
 	public static String getHash(File file) throws Exception {
 		MessageDigest md5Digest = MessageDigest.getInstance("MD5");
 		String checksum = getFileChecksum(md5Digest, file);
