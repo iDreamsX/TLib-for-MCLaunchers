@@ -12,7 +12,7 @@ public class TConstants {
 	public static int WIDTH = 880;
 	public static int HEIGHT = 520;
 	public static String RESOURCE_PKG_LOCATION = "/resources/";
-	public static String DOWNLOAD_URL = "http://localhost/downloadtests/Lypsia/";
+	public static String DOWNLOAD_URL = "http://localhost/";
 	public static Versions VERSION;
 	public static String PREFERENCES_ABREV = "ab";
 	
